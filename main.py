@@ -1,5 +1,5 @@
-from chrome.chromedriver import ChromeDriver
 from api.tautulli_api import Tautulli
+from api.letterboxd import Letterboxd
 import json
 
 def read_keys():
@@ -10,12 +10,11 @@ def read_keys():
 if __name__ == "__main__":
     keys = read_keys()
 
-    url = "https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json"
-    version = "latest"
-    platform = "linux64"
-    chrome_driver = ChromeDriver(url, version, platform)
-    chrome_driver.download_chromedriver()
+    tautulli = Tautulli(url=keys["tautulli"]["url"], key=keys["tautulli"]["api_key"])
+    tautulli.get_watched(user=keys["tautulli"]["username"])
+    tautulli.check_watched_status()
+    tautulli.compile_json_to_csv(file="history")
 
-    tautulli = Tautulli(keys["url"], keys["api_key"])
-    tautulli.get_watched(keys["username"])
-    
+    letterboxd = Letterboxd(keys["letterboxd"]["username"], keys["letterboxd"]["password"])
+    letterboxd.login()
+    letterboxd.import_data(file="history.csv")
