@@ -23,7 +23,8 @@ class Letterboxd:
 
     def import_data(self, file):
         try:
-            content = open(file, "rb")
+            file_handle = open(file, "rb")
+            content = file_handle.read()
         except FileNotFoundError as e:
             print(f"File {file} not found")
             return
@@ -34,6 +35,33 @@ class Letterboxd:
             "file": content
         }
         try:
-            self.session.post("https://letterboxd.com/import/csv", data=data, files=files)
+            result = self.session.post("https://letterboxd.com/import/csv/", data=data, files=files)
+        except requests.exceptions.RequestException as e:
+            raise SystemExit(e)
+        
+        data = {
+            "__csrf": self.csrf,
+            "data": json.loads(result.text)["data"],
+        }
+        try:
+            result = self.session.post("https://letterboxd.com/import/watchlist/match-import-film/", data=data)
+        except requests.exceptions.RequestException as e:
+            raise SystemExit(e)
+        
+        data = {
+            "__csrf": self.csrf,
+            "filmListId": "",
+            "name": "",
+            "publicList": "",
+            "numberedList": "",
+            "notes": "",
+            "tags": "",
+            "shouldMarkAsWatched": "true",
+            "shouldImportWatchedDates": "true",
+            "importRating": "",
+            
+        }
+        try:
+            self.session.post("https://letterboxd.com/s/save-users-imported-imdb-history/")
         except requests.exceptions.RequestException as e:
             raise SystemExit(e)
