@@ -1,5 +1,7 @@
 import requests
 import json
+import bs4
+import html
 
 class Letterboxd:
     def __init__(self, username, password):
@@ -20,6 +22,15 @@ class Letterboxd:
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
             raise SystemExit(e)
+        
+    def parse_film_jsons(self, content):
+        soup = bs4.BeautifulSoup(content, 'html.parser')
+        import_films = soup.find_all("li", class_="import-film")
+        data = []
+        for film in import_films:
+            data_json_encoded = film.get("data-json")
+            data_json_decoded = html.unescape(data_json_encoded)
+            data.append(json.loads(data_json_decoded))
 
     def import_data(self, file):
         try:
@@ -38,10 +49,12 @@ class Letterboxd:
             result = self.session.post("https://letterboxd.com/import/csv/", data=data, files=files)
         except requests.exceptions.RequestException as e:
             raise SystemExit(e)
+
+        self.parse_film_jsons(result.content)
         
         data = {
             "__csrf": self.csrf,
-            "data": json.loads(result.text)["data"],
+            "data": data_json_decoded,
         }
         try:
             result = self.session.post("https://letterboxd.com/import/watchlist/match-import-film/", data=data)
