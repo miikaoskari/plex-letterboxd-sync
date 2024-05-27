@@ -31,6 +31,16 @@ class Letterboxd:
             data_json_encoded = film.get("data-json")
             data_json_decoded = html.unescape(data_json_encoded)
             data.append(json.loads(data_json_decoded))
+        # letterboxd wants to have 100 films in the import list
+        # rest is filled with "undefined"
+        while len(data) < 100:
+            data.append("undefined")
+
+        wrapped_data = {
+            "importType": "diary",
+            "importFilms": data,
+        }
+        return json.dumps(wrapped_data)
 
     def import_data(self, file):
         try:
@@ -50,7 +60,7 @@ class Letterboxd:
         except requests.exceptions.RequestException as e:
             raise SystemExit(e)
 
-        self.parse_film_jsons(result.content)
+        data_json_decoded = self.parse_film_jsons(result.content)
         
         data = {
             "__csrf": self.csrf,
