@@ -2,6 +2,8 @@ import requests
 import json
 import bs4
 import html
+import pandas as pd
+from datetime import datetime
 
 class Letterboxd:
     def __init__(self, username, password):
@@ -53,8 +55,32 @@ class Letterboxd:
                 film_ids.append(("importFilmId", film_id))
                 self.film_count += 1
         return film_ids
+    
+    def get_dates_from_csv(self):
+        df = pd.read_csv(self.file)
+        watched_dates = df["WatchedDate"].tolist()
+        dates = []
+        for _ in range(self.film_count):
+            try:
+                date = watched_dates.pop(0)
+                dates.append(("importWatchedDate", date))
+            except IndexError:
+                dates.append(("importWatchedDate", ""))
+        return dates
+    
+    def get_dates(self, content):
+        soup = bs4.BeautifulSoup(content, 'html.parser')
+        date_elements = soup.find_all("p", class_="view-date")
+        dates = []
+        for date in date_elements:
+            date = date.text.replace("Watched ", "")
+            date_object = datetime.strptime(date, "%b %d, %Y")
+            formatted_date = date_object.strftime("%Y-%m-%d")
+            dates.append(("importWatchedDate", formatted_date))
+        return dates
 
     def import_data(self, file):
+        self.file = file
         try:
             file_handle = open(file, "rb")
             content = file_handle.read()
@@ -85,6 +111,7 @@ class Letterboxd:
         
 
         film_ids = self.find_film_ids(result.content)
+        import_watched_dates = self.get_dates(result.content)
 
         default_data = [
             ("__csrf", self.csrf),
@@ -99,15 +126,22 @@ class Letterboxd:
         ]
 
         import_ratings = [("importRating", "") for _ in range(self.film_count)]
+        default_data.extend(import_ratings)
         import_reviews = [("importReview", "") for _ in range(self.film_count)]
+        default_data.extend(import_reviews)
         import_tags = [("importTags", "") for _ in range(self.film_count)]
-        import_watched_dates = [("importWatchedDate", "") for _ in range(self.film_count)]
+        default_data.extend(import_tags)
+        default_data.extend(import_watched_dates)
         import_rewatch = [("importRewatch", "false") for _ in range(self.film_count)]
-        default_data.append(film_ids)
+        default_data.extend(import_rewatch)
+        default_data.extend(film_ids)
         import_viewing_ids = [("importViewingId", "") for _ in range(self.film_count)]
+        default_data.extend(import_viewing_ids)
         should_import_films = [("shouldImportFilm", "true") for _ in range(self.film_count)]
+        default_data.extend(should_import_films)
 
         try:
-            self.session.post("https://letterboxd.com/s/save-users-imported-imdb-history/")
+            result = self.session.post("https://letterboxd.com/s/save-users-imported-imdb-history/", data=default_data)
         except requests.exceptions.RequestException as e:
             raise SystemExit(e)
+        print(f"Successfully imported {self.film_count} films from {file} to Letterboxd.")
