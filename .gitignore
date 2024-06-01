@@ -1,4 +1,7 @@
 keys.json
+history.json
+cert.pem
+
 .DS_Store
 ._.DS_Store
 *.csv
