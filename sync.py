@@ -14,7 +14,7 @@ def debug():
     os.environ["HTTP_PROXY"]="http://127.0.0.1:8080"
     os.environ["HTTPS_PROXY"]="http://127.0.0.1:8080"
 
-if __name__ == "__main__":
+def start_sync():
     keys = read_keys()
 
     tautulli = Tautulli(url=keys["tautulli"]["url"], key=keys["tautulli"]["api_key"])
@@ -25,3 +25,6 @@ if __name__ == "__main__":
     letterboxd = Letterboxd(keys["letterboxd"]["username"], keys["letterboxd"]["password"])
     letterboxd.login()
     letterboxd.import_data(file="history.csv")
+
+if __name__ == "__main__":
+    start_sync()
