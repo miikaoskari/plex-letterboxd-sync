@@ -10,7 +10,6 @@ class Letterboxd:
         self.username = username
         self.password = password
         self.film_count = 0
-        self.proxies = {"http": "http://127.0.0.1:8080", "https": "http://127.0.0.1:8080"}
 
     def login(self):
         self.session = requests.Session()
@@ -22,7 +21,7 @@ class Letterboxd:
             "__csrf": self.csrf
         }
         try:
-            response = self.session.post("https://letterboxd.com/user/login.do", data=data, proxies=self.proxies)
+            response = self.session.post("https://letterboxd.com/user/login.do", data=data)
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
             raise SystemExit(e)
@@ -95,7 +94,7 @@ class Letterboxd:
             "file": content
         }
         try:
-            result = self.session.post("https://letterboxd.com/import/csv/", data=data, files=files, proxies=self.proxies)
+            result = self.session.post("https://letterboxd.com/import/csv/", data=data, files=files)
         except requests.exceptions.RequestException as e:
             raise SystemExit(e)
 
@@ -106,7 +105,7 @@ class Letterboxd:
             "__csrf": self.csrf,
         }
         try:
-            result = self.session.post("https://letterboxd.com/import/watchlist/match-import-film/", data=data, proxies=self.proxies)
+            result = self.session.post("https://letterboxd.com/import/watchlist/match-import-film/", data=data)
         except requests.exceptions.RequestException as e:
             raise SystemExit(e)
         
@@ -142,7 +141,7 @@ class Letterboxd:
         default_data.extend(should_import_films)
         encoded_data = [(key.encode('utf-8'), value.encode('utf-8')) for key, value in default_data]
         try:
-            result = self.session.post("https://letterboxd.com/s/save-users-imported-imdb-history", data=encoded_data, proxies=self.proxies)
+            result = self.session.post("https://letterboxd.com/s/save-users-imported-imdb-history", data=encoded_data)
         except requests.exceptions.RequestException as e:
             raise SystemExit(e)
         print(f"Successfully imported {self.film_count} films from {file} to Letterboxd.")
