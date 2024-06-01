@@ -7,6 +7,13 @@ def read_keys():
         keys = json.load(f)
     return keys
 
+def debug():
+    import os
+    # for debugging with burp suite
+    os.environ["REQUESTS_CA_BUNDLE"]="cert.pem"
+    os.environ["HTTP_PROXY"]="http://127.0.0.1:8080"
+    os.environ["HTTPS_PROXY"]="http://127.0.0.1:8080"
+
 if __name__ == "__main__":
     keys = read_keys()
 
