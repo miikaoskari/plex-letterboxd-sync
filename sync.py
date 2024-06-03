@@ -25,6 +25,8 @@ def start_sync():
     letterboxd = Letterboxd(keys["letterboxd"]["username"], keys["letterboxd"]["password"])
     letterboxd.login()
     letterboxd.import_data(file="history.csv")
+    letterboxd.match_import_film()
+    letterboxd.save_users_imported_imdb_history()
 
 if __name__ == "__main__":
     start_sync()
