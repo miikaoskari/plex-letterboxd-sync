@@ -3,7 +3,8 @@ import bs4
 import html
 import json
 from datetime import datetime
-    
+
+
 def get_dates_from_csv(self):
     df = pd.read_csv(self.file)
     watched_dates = df["WatchedDate"].tolist()
@@ -18,7 +19,7 @@ def get_dates_from_csv(self):
 
 
 def parse_film_jsons(content):
-    soup = bs4.BeautifulSoup(content, 'html.parser')
+    soup = bs4.BeautifulSoup(content, "html.parser")
     import_films = soup.find_all("li", class_="import-film")
     data = []
     for film in import_films:
@@ -36,8 +37,9 @@ def parse_film_jsons(content):
     }
     return json.dumps(wrapped_data)
 
+
 def get_dates(content):
-    soup = bs4.BeautifulSoup(content, 'html.parser')
+    soup = bs4.BeautifulSoup(content, "html.parser")
     date_elements = soup.find_all("p", class_="view-date")
     dates = []
     for date in date_elements:
@@ -47,8 +49,9 @@ def get_dates(content):
         dates.append(("importWatchedDate", formatted_date))
     return dates
 
+
 def find_film_ids(self, content):
-    soup = bs4.BeautifulSoup(content, 'html.parser')
+    soup = bs4.BeautifulSoup(content, "html.parser")
     film_elements = soup.find_all("div")
     film_ids = []
     for film in film_elements:

@@ -1,12 +1,16 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from sync import start_sync
 
 app = FastAPI()
+
 
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
 
-async def start_sync():
-    start_sync()
-    return {"message": "Starting sync"}
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        await start_sync(websocket)
