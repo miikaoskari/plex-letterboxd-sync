@@ -36,6 +36,13 @@ def debug():
     os.environ["HTTP_PROXY"] = "http://127.0.0.1:8080"
     os.environ["HTTPS_PROXY"] = "http://127.0.0.1:8080"
 
+async def construct_progress(status, value):
+    data = {
+        "type": "progress",
+        "status": status,
+        "value": value,
+    }
+    return json.dumps(data)
 
 async def start_sync(progress):
     """
@@ -47,15 +54,15 @@ async def start_sync(progress):
     Returns:
         None
     """
+    await progress(await construct_progress("Reading keys...", "0"))
     keys = read_keys()
-    await progress("Reading keys...")
-
     tautulli = Tautulli(url=keys["tautulli"]["url"], key=keys["tautulli"]["api_key"])
-    await progress("Retrieving watched history...")
+
+    await progress(await construct_progress("Getting watched data...", "10"))
     await tautulli.get_watched(user=keys["tautulli"]["username"])
-    await progress("Checking watched status...")
+    await progress(await construct_progress("Checking watched status...", "20"))
     await tautulli.check_watched_status()
-    await progress("Compiling JSON to CSV...")
+    await progress(await construct_progress("Compiling JSON to CSV...", "30"))
     await tautulli.compile_json_to_csv(file="history")
 
     #letterboxd = Letterboxd(

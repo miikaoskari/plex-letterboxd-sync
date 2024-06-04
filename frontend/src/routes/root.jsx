@@ -13,8 +13,16 @@ export default function Root() {
     };
 
     ws.current.onmessage = (event) => {
-      console.log("Received message from server", event.data);
-      setProgress(Number(event.data));
+      const message = JSON.parse(event.data);
+
+      switch (message.type) {
+        case "progress":
+          console.log("status: ", message.status);
+          setProgress(message.value);
+          break;
+        default:
+          console.error("Unknown message type", message.type);
+      }
     };
 
     ws.current.onclose = () => {
