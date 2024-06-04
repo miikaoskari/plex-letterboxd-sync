@@ -65,17 +65,17 @@ async def start_sync(progress):
     await progress(await construct_progress("Compiling JSON to CSV...", "30"))
     await tautulli.compile_json_to_csv(file="history")
 
-    #letterboxd = Letterboxd(
-        #keys["letterboxd"]["username"], keys["letterboxd"]["password"]
-    #)
-    #await letterboxd.login()
-    #await progress("Logging in to Letterboxd...")
-    #await letterboxd.import_data(file="history.csv")
-    #await progress("Importing data to Letterboxd...")
-    #await letterboxd.match_import_film()
-    #await progress("Matching imported films...")
-    #await letterboxd.save_users_imported_imdb_history()
-    #await progress("Saving user's imported history...")
+    letterboxd = Letterboxd(
+        keys["letterboxd"]["username"], keys["letterboxd"]["password"]
+    )
+    await letterboxd.login()
+    await progress("Logging in to Letterboxd...")
+    await letterboxd.import_data(file="history.csv")
+    await progress("Importing data to Letterboxd...")
+    await letterboxd.match_import_film()
+    await progress("Matching imported films...")
+    await letterboxd.save_users_imported_imdb_history()
+    await progress("Saving user's imported history...")
 
 def start_sync_daemon(websocket):
     """
