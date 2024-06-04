@@ -37,37 +37,38 @@ def debug():
     os.environ["HTTPS_PROXY"] = "http://127.0.0.1:8080"
 
 
-def start_sync(websocket):
+async def start_sync(progress):
     """
     Starts the synchronization process between Tautulli and Letterboxd.
 
     Args:
-        websocket: WebSocket connection.
+        progress: Progress callback function of websocket.send_text.
 
     Returns:
         None
     """
     keys = read_keys()
+    await progress("Reading keys...")
 
     tautulli = Tautulli(url=keys["tautulli"]["url"], key=keys["tautulli"]["api_key"])
-    tautulli.get_watched(user=keys["tautulli"]["username"])
-    websocket.send_text("Retrieved watched history from Tautulli.")
-    tautulli.check_watched_status()
-    websocket.send_text("Checked watched status.")
-    tautulli.compile_json_to_csv(file="history")
-    websocket.send_text("Compiled JSON to CSV.")
+    await progress("Retrieving watched history...")
+    await tautulli.get_watched(user=keys["tautulli"]["username"])
+    await progress("Checking watched status...")
+    await tautulli.check_watched_status()
+    await progress("Compiling JSON to CSV...")
+    await tautulli.compile_json_to_csv(file="history")
 
-    letterboxd = Letterboxd(
-        keys["letterboxd"]["username"], keys["letterboxd"]["password"]
-    )
-    letterboxd.login()
-    websocket.send_text("Logged in to Letterboxd.")
-    letterboxd.import_data(file="history.csv")
-    websocket.send_text("Imported data to Letterboxd.")
-    letterboxd.match_import_film()
-    websocket.send_text("Matched imported films.")
-    letterboxd.save_users_imported_imdb_history()
-    websocket.send_text("Saved imported history.")
+    #letterboxd = Letterboxd(
+        #keys["letterboxd"]["username"], keys["letterboxd"]["password"]
+    #)
+    #await letterboxd.login()
+    #await progress("Logging in to Letterboxd...")
+    #await letterboxd.import_data(file="history.csv")
+    #await progress("Importing data to Letterboxd...")
+    #await letterboxd.match_import_film()
+    #await progress("Matching imported films...")
+    #await letterboxd.save_users_imported_imdb_history()
+    #await progress("Saving user's imported history...")
 
 def start_sync_daemon(websocket):
     """

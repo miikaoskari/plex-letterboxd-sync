@@ -1,5 +1,5 @@
 from fastapi import FastAPI, WebSocket
-from .sync import start_sync, start_sync_daemon
+from sync import start_sync, start_sync_daemon
 
 app = FastAPI()
 
@@ -15,7 +15,4 @@ async def websocket_endpoint(websocket: WebSocket):
     while True:
         data = await websocket.receive_text()
         if data == "start_sync":
-            await start_sync(websocket)
-        elif data == "start_sync_daemon":
-            await start_sync_daemon(websocket)
-            
+            await start_sync(websocket.send_text)

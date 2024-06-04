@@ -1,30 +1,41 @@
 import { ProgressBar } from "../components/ProgressBar";
 import { Button } from "../components/Button";
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function Root() {
   const [progress, setProgress] = useState(0);
+  const ws = useRef(null);
 
-  async function startSync() {
-    console.log("Starting sync");
-    setProgress(1);
-    
-    const url = "/api/sync"
+  useEffect(() => {
+    ws.current = new WebSocket("/ws");
+    ws.current.onopen = () => {
+      console.log("Connected to server");
+    };
 
-    const response = await fetch(url, {
-      method: "POST",
-      mode: "cors",
-      cache: "no-cache",
-      credentials: "same-origin",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      redirect: "follow",
-      referrerPolicy: "no-referrer",
+    ws.current.onmessage = (event) => {
+      console.log("Received message from server", event.data);
+      setProgress(Number(event.data));
+    };
 
-    });
-    return response.json();
-  }
+    ws.current.onclose = () => {
+      console.log("Disconnected from server");
+    };
+
+    ws.current.onerror = (error) => {
+      console.error(error);
+    };
+
+    return () => {
+      ws.current.close();
+    };
+  }, []);
+
+  const startSync = () => {
+    if (ws.current) {
+      console.log("Sending start_sync")
+      ws.current.send("start_sync");
+    }
+  };
 
   return (
     <>
@@ -32,7 +43,7 @@ export default function Root() {
       <h1 className={"text-4xl font-bold text-white mt-4 text-center"}>Plex-Letterboxd-Sync</h1>
     </div>
     <div className={"flex justify-center mt-12"}>
-      <Button className={"mr-4"} onPress={() => startSync}>Start Sync</Button>
+      <Button className={"mr-4"} onPress={startSync}>Start Sync</Button>
       <ProgressBar className={""} label={"Syncing..."} value={progress} />
     </div>
     </>
