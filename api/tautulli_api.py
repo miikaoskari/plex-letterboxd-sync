@@ -3,6 +3,7 @@ import pandas as pd
 import json
 from datetime import datetime
 from io import StringIO
+import logging
 
 
 class Tautulli:
@@ -10,7 +11,7 @@ class Tautulli:
         self.url = url
         self.key = key
 
-    async def get_watched(self, user):
+    def get_watched(self, user):
         self.api = RawAPI(base_url=self.url, api_key=self.key)
         self.json_data = self.api.get_history(
             user=user, media_type="movie", length=1000
@@ -22,7 +23,7 @@ class Tautulli:
             f.close()
         return self.json_data
 
-    async def check_watched_status(self):
+    def check_watched_status(self):
         self.filtered_json = []
         for item in self.json_data["data"]:
             if item["watched_status"] == 1:
@@ -36,6 +37,6 @@ class Tautulli:
                 }
                 self.filtered_json.append(appendable_item)
 
-    async def compile_json_to_csv(self, file):
+    def compile_json_to_csv(self, file):
         df = pd.read_json(StringIO(json.dumps(self.filtered_json)))
         df.to_csv(f"{file}.csv", encoding="utf-8", index=False)

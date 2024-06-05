@@ -8,7 +8,7 @@ class Letterboxd:
         self.password = password
         self.film_count = 0
 
-    async def login(self):
+    def login(self):
         self.session = requests.Session()
         self.session.get("https://letterboxd.com/")
         self.csrf = self.session.cookies._cookies[".letterboxd.com"]["/"][
@@ -27,7 +27,7 @@ class Letterboxd:
         except requests.exceptions.RequestException as e:
             raise SystemExit(e)
 
-    async def import_data(self, file):
+    def import_data(self, file):
         self.file = file
         try:
             file_handle = open(file, "rb")
@@ -46,7 +46,7 @@ class Letterboxd:
         except requests.exceptions.RequestException as e:
             raise SystemExit(e)
 
-    async def match_import_film(self):
+    def match_import_film(self):
         data_json_decoded = parse_film_jsons(self.result.content)
 
         data = {
@@ -60,7 +60,7 @@ class Letterboxd:
         except requests.exceptions.RequestException as e:
             raise SystemExit(e)
 
-    async def save_users_imported_imdb_history(self):
+    def save_users_imported_imdb_history(self):
         film_ids = find_film_ids(self, self.result.content)
         import_watched_dates = get_dates(self.result.content)
 
