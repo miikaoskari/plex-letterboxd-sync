@@ -1,9 +1,12 @@
 import { ProgressBar } from "../components/ProgressBar";
 import { Button } from "../components/Button";
 import { useEffect, useState, useRef } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Root() {
   const [progress, setProgress] = useState(0);
+  const [status, setStatus] = useState("Idle");
   const ws = useRef(null);
 
   useEffect(() => {
@@ -19,6 +22,13 @@ export default function Root() {
         case "progress":
           console.log("status: ", message.status);
           setProgress(message.value);
+          setStatus(message.status);
+          if (message.value == 100) {
+            setTimeout(() => {
+              setProgress(0);
+              setStatus("Idle");
+            }, 5000);
+          }
           break;
         default:
           console.error("Unknown message type", message.type);
@@ -26,7 +36,15 @@ export default function Root() {
     };
 
     ws.current.onclose = () => {
-      console.log("Disconnected from server");
+      toast("Disconnected from server", { 
+        position: "bottom-center",
+        autoClose: 1000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "dark",
+      });
     };
 
     ws.current.onerror = (error) => {
@@ -52,7 +70,10 @@ export default function Root() {
     </div>
     <div className={"flex justify-center mt-12"}>
       <Button className={"mr-4"} onPress={startSync}>Start Sync</Button>
-      <ProgressBar className={""} label={"Syncing..."} value={progress} />
+      <ProgressBar className={""} label={status} value={progress} />
+    </div>
+    <div className={"flex justify-center mt-12"}>
+      <ToastContainer />
     </div>
     </>
   );
