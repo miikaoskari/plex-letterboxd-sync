@@ -27,7 +27,7 @@ export default function Root() {
             setTimeout(() => {
               setProgress(0);
               setStatus("Idle");
-            }, 5000);
+            }, 10000);
           }
           break;
         default:
