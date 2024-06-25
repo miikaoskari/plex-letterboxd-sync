@@ -1,5 +1,6 @@
 from tautulli import RawAPI
 import pandas as pd
+import numpy as np
 import json
 from datetime import datetime
 from io import StringIO
@@ -39,4 +40,10 @@ class Tautulli:
 
     def compile_json_to_csv(self, file):
         df = pd.read_json(StringIO(json.dumps(self.filtered_json)))
-        df.to_csv(f"{file}.csv", encoding="utf-8", index=False)
+        # letterboxd can't handle more than 100 entries at a time
+        # split them into chunks of 100
+        num_chunks = np.ceil(df.shape[0] / 100).astype(int)
+        chunks = np.array_split(df, num_chunks)
+        for i, chunk in enumerate(chunks):
+            chunk_file = f"{file}_{i+1}.csv"
+            chunk.to_csv(chunk_file, encoding="utf-8", index=False)
