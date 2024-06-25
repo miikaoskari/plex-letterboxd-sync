@@ -38,12 +38,14 @@ class Tautulli:
                 }
                 self.filtered_json.append(appendable_item)
 
-    def compile_json_to_csv(self, file):
+    def compile_json_to_csv(self):
         df = pd.read_json(StringIO(json.dumps(self.filtered_json)))
         # letterboxd can't handle more than 100 entries at a time
         # split them into chunks of 100
         num_chunks = np.ceil(df.shape[0] / 100).astype(int)
         chunks = np.array_split(df, num_chunks)
         for i, chunk in enumerate(chunks):
-            chunk_file = f"{file}_{i+1}.csv"
+            self.chunkfiles = []
+            chunk_file = f"history_{i+1}.csv"
+            self.chunkfiles.append(chunk_file)
             chunk.to_csv(chunk_file, encoding="utf-8", index=False)

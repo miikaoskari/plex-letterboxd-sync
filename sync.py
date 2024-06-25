@@ -108,27 +108,36 @@ async def start_sync(progress: Callable[[str], None]) -> None:
             url=keys["tautulli"]["url"], key=keys["tautulli"]["api_key"]
         )
 
-        await report_progress(progress, ProgressState.GETTING_WATCHED_DATA, 10)
+        await report_progress(progress, ProgressState.GETTING_WATCHED_DATA, 5)
         tautulli.get_watched(user=keys["tautulli"]["username"])
 
-        await report_progress(progress, ProgressState.CHECKING_WATCHED_STATUS, 20)
+        await report_progress(progress, ProgressState.CHECKING_WATCHED_STATUS, 10)
         tautulli.check_watched_status()
 
-        await report_progress(progress, ProgressState.COMPILING_JSON_TO_CSV, 30)
-        tautulli.compile_json_to_csv(file="history")
+        await report_progress(progress, ProgressState.COMPILING_JSON_TO_CSV, 15)
+        tautulli.compile_json_to_csv()
 
         letterboxd = Letterboxd(
             keys["letterboxd"]["username"], keys["letterboxd"]["password"]
         )
 
-        await report_progress(progress, ProgressState.LOGGING_IN_LETTERBOXD, 40)
+        await report_progress(progress, ProgressState.LOGGING_IN_LETTERBOXD, 20)
         letterboxd.login()
-        await report_progress(progress, ProgressState.IMPORTING_DATA_LETTERBOXD, 50)
-        letterboxd.import_data(file="history.csv")
-        await report_progress(progress, ProgressState.MATCHING_IMPORTED_FILMS, 70)
-        letterboxd.match_import_film()
-        await report_progress(progress, ProgressState.SAVING_IMPORTED_HISTORY, 80)
-        letterboxd.save_users_imported_imdb_history()
+
+        num_files = len(tautulli.chunkfiles)
+        # allocate 60% of the progress bar for importing data
+        progress_increment_per_file = (80 - 20) / num_files
+
+        for index, file in enumerate(tautulli.chunkfiles):
+            current_progress = 20 + index * progress_increment_per_file
+            await report_progress(progress, ProgressState.IMPORTING_DATA_LETTERBOXD, current_progress)
+            letterboxd.import_data(file=file)
+
+            await report_progress(progress, ProgressState.MATCHING_IMPORTED_FILMS, current_progress + (progress_increment_per_file / 3))
+            letterboxd.match_import_film()
+
+            await report_progress(progress, ProgressState.SAVING_IMPORTED_HISTORY, current_progress + (2 * progress_increment_per_file / 3))
+            letterboxd.save_users_imported_imdb_history()
 
         await report_progress(progress, ProgressState.SYNC_COMPLETE, 100)
 
